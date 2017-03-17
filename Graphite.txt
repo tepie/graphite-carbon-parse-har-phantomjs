@@ -1,0 +1,60 @@
+
+==========================================================================================
+Links
+==========================================================================================
+
+https://github.com/etsy/statsd
+https://github.com/etsy/logster
+graphite.readthedocs.io/en/latest/config-carbon.html
+http://graphite.wikidot.com/quickstart-guide
+
+==========================================================================================
+Commands 
+==========================================================================================
+
+---------------------------
+Set ENV Variables
+---------------------------
+
+export GRAPHITE_ROOT=/opt/graphite
+
+---------------------------
+Create django admin user
+---------------------------
+
+export DJANGO_SETTINGS_MODULE=graphite.settings
+PYTHONPATH=$GRAPHITE_ROOT/webapp django-admin.py createsuperuser
+
+---------------------------
+Init the database
+---------------------------
+
+PYTHONPATH=$GRAPHITE_ROOT/webapp django-admin.py migrate --settings=graphite.settings --run-syncdb
+
+---------------------------
+Run graphite
+---------------------------
+
+PYTHONPATH=`pwd`/storage/whisper ./bin/run-graphite-devel-server.py --port=8085 --libs=`pwd`/webapp /opt/graphite 1>/opt/graphite/storage/log/webapp/process.log 2>&1 &
+
+---------------------------
+Run carbon
+---------------------------
+
+/opt/graphite/bin/carbon-cache.py start
+
+---------------------------
+Send test stats
+---------------------------
+
+echo "test.bash.stats 42 `date +%s`" | nc localhost 2003
+
+python ./examples/example-client.py 
+
+==========================================================================================
+HAR Commands
+==========================================================================================
+
+phantomjs ../phantomjs/examples/netsniff.js "https://usmerchant-test.iframe.redworldwide.com/ReDiFrame/initPayment?trxn_key=8f23f9c0-8da2-47da-84bb-f0dd1a0d05c2"
+
+
